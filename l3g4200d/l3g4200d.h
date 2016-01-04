@@ -1,6 +1,6 @@
 #ifndef _L3G4200D_H_
 #define _L3G4200D_H_
-#include "arduino.h"
+#include"arduino.h"
 #define L3G4200DADDR 0X69 //7 bits address
 
 #define	WHO_AM_I		0X0F 		
@@ -32,20 +32,27 @@
 
 class L3G4200D
 {
+	private:
+	//----variable-------
+		float sensitivity;
+		
+	//----functions------	
+		void WriteReg(byte reg, byte value);
+		byte ReadReg(byte reg);
+		void Getsensitivity();
 	public:
 		typedef struct vector
 		{
 			float x, y, z;
 		} vector;
+		vector raw;		//16-bits raw datas.
+		vector gDeg; 	// gyro angular velocity by degree per second
+		vector gRad;	// gyro angular velocity by radian per second
 		
-		vector g; // gyro angular velocity readings
-
-		void enableDefault(void);
-		
-		void writeReg(byte reg, byte value);
-		byte readReg(byte reg);
-		
-		void read(void);
+		uint8_t GetID();
+		void EnableL3G4200D(void);	
+		void GetGyroscopeXYZ(void);
+		void Deg2Rad();
 		
 		// vector functions
 		static void vector_cross(const vector *a, const vector *b, vector *out);

@@ -133,3 +133,7 @@ unsigned long BMP085::ReadUP()
   up = (((unsigned long) msb << 16) | ((unsigned long) lsb << 8) | (unsigned long) xlsb) >> (8-OSS);
   return up;
 }
+
+float BMP085::GetAltitude(float pressure, float seaLevelPressure) {
+    return 44330 * (1.0 - pow(pressure / seaLevelPressure, 0.1903));
+}

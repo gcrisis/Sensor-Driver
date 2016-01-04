@@ -6,36 +6,54 @@
 
 // The Arduino two-wire interface uses a 7-bit number for the address, 
 // and sets the last bit correctly based on reads and writes
-#define GYR_ADDRESS (0xD2 >> 1)
+#define L3G4200DADDR 0x69
 
 // Public Methods //////////////////////////////////////////////////////////////
-
-// Turns on the L3G4200D's gyro and places it in normal mode.
-void L3G4200D::enableDefault(void)
-{
-	// 0x0F = 0b00001111
-	// Normal power mode, all axes enabled
-	writeReg(CTRL_REG1, 0x0F);
+uint8_t L3G4200D::GetID(){
+	return ReadReg(WHO_AM_I);
 }
-
-// Writes a gyro register
-void L3G4200D::writeReg(byte reg, byte value)
+// Turns on the L3G4200D's gyro and places it in normal mode.
+void L3G4200D::EnableL3G4200D(void)
 {
-	Wire.beginTransmission(GYR_ADDRESS);
+	WriteReg(CTRL_REG1, 0x0F);// Normal mode, all axes enabled,100Hz
+	WriteReg(CTRL_REG2, 0x00);//High pass filter:normal mode ,8Hz
+	WriteReg(CTRL_REG3, 0x08);// date ready on DRDY/int2
+	WriteReg(CTRL_REG4, 0x30);//2000 dps
+	WriteReg(CTRL_REG5, 0x00);
+	Getsensitivity();
+}
+void L3G4200D::Getsensitivity(){
+	switch(ReadReg(CTRL_REG4)&0x30){
+		case 0x00:
+			sensitivity=0.00875;
+			break;
+		case 0x10:
+			sensitivity=0.0175;
+			break;
+		case 0x20:
+		case 0x30:
+			sensitivity=0.07;
+			break;
+	}
+}
+// Writes a gyro register
+void L3G4200D::WriteReg(byte reg, byte value)
+{
+	Wire.beginTransmission(L3G4200DADDR);
 	Wire.write(reg);
 	Wire.write(value);
 	Wire.endTransmission();
 }
 
 // Reads a gyro register
-byte L3G4200D::readReg(byte reg)
+byte L3G4200D::ReadReg(byte reg)
 {
 	byte value;
 	
-	Wire.beginTransmission(GYR_ADDRESS);
+	Wire.beginTransmission(L3G4200DADDR);
 	Wire.write(reg);
 	Wire.endTransmission();
-	Wire.requestFrom(GYR_ADDRESS, 1);
+	Wire.requestFrom(L3G4200DADDR, 1);
 	value = Wire.read();
 	Wire.endTransmission();
 	
@@ -43,14 +61,14 @@ byte L3G4200D::readReg(byte reg)
 }
 
 // Reads the 3 gyro channels and stores them in vector g
-void L3G4200D::read()
+void L3G4200D::GetGyroscopeXYZ()
 {
-	Wire.beginTransmission(GYR_ADDRESS);
+	Wire.beginTransmission(L3G4200DADDR);
 	// assert the MSB of the address to get the gyro 
 	// to do slave-transmit subaddress updating.
 	Wire.write(OUT_X_L | (1 << 7)); 
 	Wire.endTransmission();
-	Wire.requestFrom(GYR_ADDRESS, 6);
+	Wire.requestFrom(L3G4200DADDR, 6);
 
 	while (Wire.available() < 6);
 	
@@ -61,9 +79,18 @@ void L3G4200D::read()
 	uint8_t zla = Wire.read();
 	uint8_t zha = Wire.read();
 
-	g.x = xha << 8 | xla;
-	g.y = yha << 8 | yla;
-	g.z = zha << 8 | zla;
+	raw.x = xha << 8 | xla;
+	raw.y = yha << 8 | yla;
+	raw.z = zha << 8 | zla;
+	gDeg.x = raw.x*sensitivity;
+	gDeg.y = raw.y*sensitivity;
+	gDeg.z = raw.z*sensitivity;	
+}
+
+void L3G4200D::Deg2Rad(){
+	gRad.x=gDeg.x*PI/180;
+	gRad.y=gDeg.y*PI/180;
+	gRad.z=gDeg.z*PI/180;
 }
 
 void L3G4200D::vector_cross(const vector *a,const vector *b, vector *out)

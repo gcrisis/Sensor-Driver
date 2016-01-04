@@ -3,6 +3,19 @@
 #include<Arduino.h>
 #include "hmc5883l.h"
 
+
+
+bool HMC5883L::GetID(){
+		Wire.beginTransmission(HMC5883LADDR);
+		Wire.write(IRA); //select register 3, X MSB register
+		Wire.endTransmission();
+		Wire.requestFrom(HMC5883LADDR,3);		
+		while(Wire.available()<3);
+		id[0]=Wire.read();
+		id[1]=Wire.read();
+		id[2]=Wire.read();
+		return true;
+}
 /*  初始化配置：
  *   寄存器A：平均采样数、连续模式输出速率、测量配置
  *   寄存器B：增益
@@ -12,8 +25,8 @@ bool HMC5883L::EnableHMC5883L(){
 		Wire.beginTransmission(HMC5883LADDR); //open communication with HMC5883
 		Wire.write(CRA);  //
 		Wire.write(0x70);
-    Wire.write(0x20);//
-    Wire.write(0x00); //continuous measurement mode
+		Wire.write(0x20);//
+		Wire.write(0x00); //continuous measurement mode
 		Wire.endTransmission();
    return true;
 }

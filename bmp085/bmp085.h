@@ -67,6 +67,7 @@ class BMP085 {
 		void 	GetCalParam();
 		short	GetTemperature();
 		long 	GetPressure();
+    float GetAltitude(float pressure, float seaLevelPressure=101325);
 	
 };
 #endif

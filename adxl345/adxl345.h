@@ -43,7 +43,9 @@ class ADXL345{
 		
 	public:
 		vector accel;
-		void EnableAdxl345();
-		void GetAccelXYZ();
+		
+		uint8_t GetID();
+		void 	EnableADXL345();
+		void 	GetAccelXYZ();
 };
 #endif	

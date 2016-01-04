@@ -25,11 +25,14 @@ class HMC5883L{
 	
 	public:
 		vector compass;
-   float heading;
-   
+		uint8_t id[3];
+		float heading;
+		
+		
+		bool GetID();
 		bool EnableHMC5883L();
 		bool GetCompassXYZ();
-   bool GetHeading();
-    bool SelfTest();
+		bool GetHeading();
+		bool SelfTest();
 };
 #endif

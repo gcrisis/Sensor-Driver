@@ -1,8 +1,16 @@
 #include "adxl345.h"
 #include <Wire.h>
 
+uint8_t ADXL345::GetID(){
+	Wire.beginTransmission(ADXL345ADDR);
+	Wire.write(DEVID); 
+	Wire.endTransmission();
+	Wire.requestFrom(ADXL345ADDR, 1);
 
-void ADXL345::EnableAdxl345(){
+	while (Wire.available() < 1);
+	return Wire.read();
+}
+void ADXL345::EnableADXL345(){
 		Wire.beginTransmission(ADXL345ADDR);
 		Wire.write(POWER_CTL);
 		Wire.write(8);                //measuring enable
